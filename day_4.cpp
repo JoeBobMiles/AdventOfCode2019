@@ -15,7 +15,7 @@
 
 enum Error {
     ACCEPT,         // We didn't error.
-    NO_DUPLICATE,   // There were no consecutively repeated digits in password.
+    NO_RUN_OF_TWO,   // There was no "run" of 2 digits.
     DIGIT_DECREASED // A digit decreased relative to previous digit.
 };
 
@@ -25,28 +25,32 @@ std::pair<bool, Error> validate_password(int password)
     std::string password_string = std::to_string(password);
 
 
-    int  last_digit      = -1;
-    bool duplicate_digit = false;
+    int last_digit = -1;
+    int digit_count[10] = { 0 };
+
 
     for (char c : password_string)
     {
         int i = std::stoi(&c);
 
+
         if (i < last_digit)
             return std::pair<bool, Error>(false, DIGIT_DECREASED);
 
-        if (i == last_digit)
-            duplicate_digit = true;
+        digit_count[i]++;
 
         last_digit = i;
     }
 
 
-    if (duplicate_digit)
-        return std::pair<bool, Error>(true, ACCEPT);
+    for (int i : digit_count)
+    {
+        if (i == 2)
+            return std::pair<bool, Error>(true, ACCEPT);
+    }
 
-    else
-        return std::pair<bool, Error>(false, NO_DUPLICATE);
+
+    return std::pair<bool, Error>(false, NO_RUN_OF_TWO);
 }
 
 
