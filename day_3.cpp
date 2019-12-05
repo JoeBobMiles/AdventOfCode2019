@@ -130,12 +130,6 @@ int main (int argc, const char** argv)
     std::vector<Cell> wire2 = build_wire(parse_command_string(wire2_command_string));
 
 
-    // `intersections` was empty until we sorted both cell arrays...
-    // When I tried that last night, it didn't work...
-    std::sort(wire1.begin(), wire1.end());
-    std::sort(wire2.begin(), wire2.end());
-
-
     // print_cells(wire1);
     // print_cells(wire2);
 
@@ -143,22 +137,47 @@ int main (int argc, const char** argv)
     std::vector<Cell> intersections;
 
 
-    std::set_intersection(wire1.begin(), wire1.end(),
-                          wire2.begin(), wire2.end(),
-                          std::back_inserter(intersections));
+    {
+        std::vector<Cell> wire1_copy(wire1), wire2_copy(wire2);
+
+
+        // `intersections` was empty until we sorted both cell arrays...
+        // When I tried that last night, it didn't work...
+        std::sort(wire1_copy.begin(), wire1_copy.end());
+        std::sort(wire2_copy.begin(), wire2_copy.end());
+
+
+        std::set_intersection(wire1_copy.begin(), wire1_copy.end(),
+                              wire2_copy.begin(), wire2_copy.end(),
+                              std::back_inserter(intersections));
+    }
 
 
     print_cells(intersections);
 
 
-    int minimum_manhattan = INT_MAX;
-#define manhattan(p) (std::abs(p.first) + std::abs(p.second))
+    int minimum_sum = INT_MAX;
+
 
     for (Cell cell : intersections)
-        minimum_manhattan = manhattan(cell) < minimum_manhattan ? manhattan(cell) : minimum_manhattan;
+    {
+        int running_sum = 0;
 
 
-    std::cout << "Result:\t" << minimum_manhattan << std::endl;
+        for (int i = 0; i < wire1.size(); i++)
+            if (wire1[i] == cell) running_sum += i + 1;
+
+        for (int i = 0; i < wire2.size(); i++)
+            if (wire2[i] == cell) running_sum += i + 1;
+
+
+        minimum_sum = running_sum < minimum_sum
+                      ? running_sum
+                      : minimum_sum;
+    }
+
+
+    std::cout << "Result:\t" << minimum_sum << std::endl;
 
 
     return 0;
